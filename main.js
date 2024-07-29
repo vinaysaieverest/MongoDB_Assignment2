@@ -1,69 +1,78 @@
-const a = require('./readCSV')
+const readCSVFile = require('./readCSV')
 const data = ('./c.csv')
+const data1 = ('./movies.csv')
 const fs = require('fs');
 const csv = require('csv-parser');
+const mongoose = require("mongoose")
 const e = require('express');
-
-function readCSVFile(filePath) {
-    return new Promise((resolve, reject) => {
-        const results = [];
-        fs.createReadStream(filePath)
-            .pipe(csv())
-            .on('data', (data) => results.push(data))
-            .on('end', () => resolve(results))
-            .on('error', (error) => reject(error));
-    });
-}
+const {Movies,Critics} = require('./models')
+const connection = require('./connection')
+const insertingData = require('./insertingData')
+const test = require('./queries')
 
 async function vinay() {
   try {
     const vinay = await readCSVFile(data);
+    const moviesData = await readCSVFile(data1)
     const ratings = vinay.map((a) => {
       let ele = a.originalScore;
+      let newrating;
       if(ele.includes('/')) {
         const [numerator, denominator] = ele.split('/');
-        return (parseFloat(numerator) / parseFloat(denominator))*10;
+        newrating = (parseFloat(numerator) / parseFloat(denominator))*10;
     }
     else if(ele === "")
-        return "Not reviewd";
+        newrating =  null;
     else if (ele === "FIVE STARS"){
-      return 10
+      newrating = 10
 
     }
-    else if (ele === "3 out of -4..4"){
-      return 7.5
+    else if (ele === "+3 out of -4..4"){
+      newrating = 7.5
     }
     
     else switch (ele) {
         case "A+":
-          return 10;
+          newrating = 10;
+          break;
         case "A":
-          return 9;
+          newrating = 9;
+          break;
         case "A-":
-          return 8;
+          newrating = 8;
+          break;
         case "B+":
-          return 7;
+          newrating = 7;
+          break;
         case "B":
-          return 6;
+          newrating = 6;
+          break;
         case "B-":
-          return 5;
+          newrating = 5;
+          break;
         case 'C+':
-          return 4;
+          newrating = 4;
+          break;
         case "C":
-          return 3;
+          newrating = 3;
+          break;
         case "-C":
-          return 2
+          newrating = 2
+          break;
         default:
-          return 1;
+          newrating = 1;
+          break;
     }
+    return {...a,originalScore: newrating}
     });
-    console.log(ratings);
+    await insertingData(ratings,moviesData)
   } catch (e) {
     console.log(e);
   }
 }
 
 
-
-//readCSVFile()
+connection()
 vinay()
+insertingData() 
+test()
