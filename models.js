@@ -13,8 +13,8 @@ const movies =  new mongoose.Schema({
 })
 const critics = new mongoose.Schema({
     movieId:{
-        type:String,
-        //required : true
+        type: mongoose.SchemaTypes.ObjectId,
+        ref: "Movies"
         
     },
     criticName:{
@@ -24,10 +24,26 @@ const critics = new mongoose.Schema({
     },
     originalScore:{
         type:Number
-    }
+    },
+
+        
   
+})
+const users = new mongoose.Schema({
+    movieId:{
+        type: mongoose.SchemaTypes.ObjectId,
+        ref: "Movies"
+        
+    },
+    rating:{
+        type:Number
+    },
+    userId:{
+        type:String
+    }
 })
 const Movies = mongoose.model("Movies",movies);
 const Critics = mongoose.model("Critics",critics);
-module.exports = {Movies,Critics};
+const Users = mongoose.model("Users",users);
+module.exports = {Movies,Critics,Users};
 

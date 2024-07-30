@@ -1,19 +1,24 @@
 const readCSVFile = require('./readCSV')
 const data = ('./c.csv')
 const data1 = ('./movies.csv')
+const data2 = ('./user_reviews.csv')
 const fs = require('fs');
 const csv = require('csv-parser');
 const mongoose = require("mongoose")
 const e = require('express');
-const {Movies,Critics} = require('./models')
+const {Movies,Critics,Users} = require('./models')
 const connection = require('./connection')
 const insertingData = require('./insertingData')
-const test = require('./queries')
+const all_critics_reviews = require('./queries/queries')
+const all_reviews = require('./queries/avg_critics_values')
+const express = require("express")
+const app = express()
 
 async function vinay() {
   try {
     const vinay = await readCSVFile(data);
     const moviesData = await readCSVFile(data1)
+    const userdata = await readCSVFile(data2)
     const ratings = vinay.map((a) => {
       let ele = a.originalScore;
       let newrating;
@@ -65,14 +70,28 @@ async function vinay() {
     }
     return {...a,originalScore: newrating}
     });
-    await insertingData(ratings,moviesData)
+    await insertingData(ratings,moviesData,userdata)
   } catch (e) {
     console.log(e);
   }
 }
 
+const queries = async () => {
+  try {
+      app.use("/api/",all_critics_reviews );
+      app.use('/api/a',all_reviews)
+  } catch (e) {
+      console.log(e);
+  }
+};
+
+
 
 connection()
 vinay()
 insertingData() 
-test()
+queries()
+const PORT = process.env.PORT || 4000;
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+});
